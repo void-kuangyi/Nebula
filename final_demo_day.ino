@@ -20,7 +20,7 @@ const int motorPin7 = 14;
 const int buttonPin = 26;
 const int switchPin = 25;
 
-int previousMotorPin;
+int previousMotorPin = 34;
 int switchState = 0;
 int buttonState = 0;
 
@@ -43,8 +43,13 @@ float getBearing(geoLocFloat a, geoLocFloat b) {
 }
 
 void setMotorPin(int motorPin, float intensity) {
-  analogWrite(previousMotorPin, 0);
+  if (previousMotorPin != 34) {
+    analogWrite(previousMotorPin, 0);
+  }
   analogWrite(motorPin, intensity);
+  delay(200);
+  analogWrite(motorPin, 0);
+  delay(1000);
   previousMotorPin = motorPin;
 }
 
@@ -68,13 +73,13 @@ void setup() {
   pinMode(motorPin7, OUTPUT);
   pinMode(buttonPin, INPUT);
   pinMode(switchPin, INPUT);
+
 }
 
 void loop() {
 
   switchState = digitalRead(switchPin);
-
-  if (switchState == 0) {
+  if (switchState == 1) {
     char c = GPS.read();
     if (GPSECHO)
       if (c) Serial.print(c);
@@ -134,7 +139,7 @@ void loop() {
       Serial.print("relativeBearing");
       Serial.println(relativeBearing);
 
-      float intensity = (255 * distanceToWayPoint) / 200;
+      float intensity = (255 * distanceToWayPoint) / 1000;
 
       if (relativeBearing < 22.5 || relativeBearing > 337.5) {
       }
