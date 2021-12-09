@@ -10,15 +10,15 @@ Adafruit_GPS GPS(&GPSSerial);
 uint32_t timer = millis();
 
 QMC5883LCompass compass;
-const int motorPin1 = A1;
-const int motorPin2 = A2;
-const int motorPin3 = A3;
-const int motorPin4 = A4;
-const int motorPin5 = A5;
-const int motorPin6 = A6;
-const int motorPin7 = A7;
-const int buttonPin = 12;
-const int switchPin = 13;
+const int motorPin1 = 13;
+const int motorPin2 = 12;
+const int motorPin3 = 27;
+const int motorPin4 = 33;
+const int motorPin5 = 15;
+const int motorPin6 = 32;
+const int motorPin7 = 14;
+const int buttonPin = 26;
+const int switchPin = 25;
 
 int previousMotorPin;
 int switchState = 0;
