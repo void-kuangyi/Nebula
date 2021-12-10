@@ -24,12 +24,16 @@ int previousMotorPin = 34;
 int switchState = 0;
 int buttonState = 0;
 
+
 struct geoLocFloat {
+  //Patrick Suhm(2020) SelfDrivingRobot [Source code]. https://github.com/PatrickSuhm/SelfDrivingGPSRobot/blob/master/gps.h#L10
   float lat = 0;
   float lon = 0;
 } wayPoint, current;
 
+
 float getBearing(geoLocFloat a, geoLocFloat b) {
+  //Patrick Suhm(2020) SelfDrivingRobot [Source code]. https://github.com/PatrickSuhm/SelfDrivingGPSRobot/blob/master/gps.h#L128
   //@brief: returns the angle between (a,b) and (a,North) in Degree.
   const float toRad = 0.0174533f;
   const float toDeg = 57.2957795f;
