@@ -58,13 +58,22 @@ void setMotorPin(int motorPin, float intensity) {
   previousMotorPin = motorPin;
 }
 
-void sendFeedback() {
+void buttonOnFeedback() {
   int motorPins [7] = { motorPin1, motorPin2, motorPin3, motorPin4, motorPin5, motorPin6, motorPin7 };
   for (int i = 0; i < 7; i = i + 1) {
     analogWrite(motorPin[i], 255);
   }
   delay(200);
   for(int i = 0; i < 7; i = i + 1) {
+    analogWrite(motorPin[i], 0);
+  }
+}
+
+void switchOnFeedback() {
+  int motorPins [7] = { motorPin1, motorPin2, motorPin3, motorPin4, motorPin5, motorPin6, motorPin7 };
+  for (int i = 0; i < 7; i = i + 1) {
+    analogWrite(motorPin[i], 255);
+    delay(200);
     analogWrite(motorPin[i], 0);
   }
 }
@@ -97,7 +106,7 @@ void loop() {
 
   switchState = digitalRead(switchPin);
   if (previousSwitchState == 0 && switchState == 1) {
-    sendFeedback();
+    switchOnFeedback();
     previousSwitchState = 1;
   }
   if (switchState == 1) {
@@ -123,7 +132,7 @@ void loop() {
       if (GPS.fix && buttonState == 1) {
         wayPoint.lat = GPS.latitudeDegrees;
         wayPoint.lon = GPS.longitudeDegrees;
-        sendFeedback();
+        buttonOnFeedback();
       }
       int compassDirection;
 
