@@ -21,6 +21,7 @@ const int buttonPin = 26;
 const int switchPin = 25;
 
 int previousMotorPin = 34;
+int previousSwitchState = 0;
 int switchState = 0;
 int buttonState = 0;
 
@@ -57,10 +58,22 @@ void setMotorPin(int motorPin, float intensity) {
   previousMotorPin = motorPin;
 }
 
+void sendFeedback() {
+  int motorPins [7] = { motorPin1, motorPin2, motorPin3, motorPin4, motorPin5, motorPin6, motorPin7 };
+  for (int i = 0; i < 7; i = i + 1) {
+    analogWrite(motorPin[i], 255);
+  }
+  delay(200);
+  for(int i = 0; i < 7; i = i + 1) {
+    analogWrite(motorPin[i], 0);
+  }
+}
+
 
 void setup() {
   Serial.begin(115200);
   compass.init();
+
 
   GPS.begin(9600);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
@@ -83,6 +96,10 @@ void setup() {
 void loop() {
 
   switchState = digitalRead(switchPin);
+  if (previousSwitchState == 0 && switchState == 1) {
+    sendFeedback();
+    previousSwitchState = 1;
+  }
   if (switchState == 1) {
     char c = GPS.read();
     if (GPSECHO)
@@ -106,6 +123,7 @@ void loop() {
       if (GPS.fix && buttonState == 1) {
         wayPoint.lat = GPS.latitudeDegrees;
         wayPoint.lon = GPS.longitudeDegrees;
+        sendFeedback();
       }
       int compassDirection;
 
