@@ -61,20 +61,20 @@ void setMotorPin(int motorPin, float intensity) {
 void buttonOnFeedback() {
   int motorPins [7] = { motorPin1, motorPin2, motorPin3, motorPin4, motorPin5, motorPin6, motorPin7 };
   for (int i = 0; i < 7; i = i + 1) {
-    analogWrite(motorPin[i], 255);
+    analogWrite(motorPins[i], 255);
   }
   delay(200);
-  for(int i = 0; i < 7; i = i + 1) {
-    analogWrite(motorPin[i], 0);
+  for (int i = 0; i < 7; i = i + 1) {
+    analogWrite(motorPins[i], 0);
   }
 }
 
 void switchOnFeedback() {
   int motorPins [7] = { motorPin1, motorPin2, motorPin3, motorPin4, motorPin5, motorPin6, motorPin7 };
   for (int i = 0; i < 7; i = i + 1) {
-    analogWrite(motorPin[i], 255);
+    analogWrite(motorPins[i], 255);
     delay(200);
-    analogWrite(motorPin[i], 0);
+    analogWrite(motorPins[i], 0);
   }
 }
 
@@ -105,9 +105,11 @@ void setup() {
 void loop() {
 
   switchState = digitalRead(switchPin);
-  if (previousSwitchState == 0 && switchState == 1) {
-    switchOnFeedback();
-    previousSwitchState = 1;
+  if (previousSwitchState != switchState) {
+    if (previousSwitchState == 0) {
+      switchOnFeedback();
+    }
+    previousSwitchState = switchState;
   }
   if (switchState == 1) {
     char c = GPS.read();
@@ -122,7 +124,6 @@ void loop() {
     if (millis() - timer > 2000) {
       timer = millis();
       buttonState = digitalRead(buttonPin);
-      Serial.println(buttonState);
 
       if (GPS.fix) {
         Serial.print("Location: ");
@@ -134,6 +135,8 @@ void loop() {
         wayPoint.lon = GPS.longitudeDegrees;
         buttonOnFeedback();
       }
+      Serial.print("button state");
+      Serial.println(buttonState);
       int compassDirection;
 
       compass.read();
