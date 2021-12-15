@@ -47,27 +47,27 @@ float getBearing(geoLocFloat a, geoLocFloat b) {
   return atan2(y, x) * toDeg;
 }
 
-void setMotorPin(int motorPin, float intensity) {
+void setMotorPin(int motorPin, float distanceToWayPoint) {
   if (previousMotorPin != 34) {
     analogWrite(previousMotorPin, 0);
   }
-  analogWrite(motorPin, intensity);
+  analogWrite(motorPin, 255);
   delay(200);
   analogWrite(motorPin, 0);
-  delay(1000);
+  delay(distanceToWayPoint*10);
   previousMotorPin = motorPin;
 }
 
-void buttonOnFeedback() {
-  int motorPins [7] = { motorPin1, motorPin2, motorPin3, motorPin4, motorPin5, motorPin6, motorPin7 };
-  for (int i = 0; i < 7; i = i + 1) {
-    analogWrite(motorPins[i], 255);
-  }
-  delay(200);
-  for (int i = 0; i < 7; i = i + 1) {
-    analogWrite(motorPins[i], 0);
-  }
-}
+//void buttonOnFeedback() {
+//  int motorPins [7] = { motorPin1, motorPin2, motorPin3, motorPin4, motorPin5, motorPin6, motorPin7 };
+//  for (int i = 0; i < 7; i = i + 1) {
+//    analogWrite(motorPins[i], 255);
+//  }
+//  delay(200);
+//  for (int i = 0; i < 7; i = i + 1) {
+//    analogWrite(motorPins[i], 0);
+//  }
+//}
 
 void switchOnFeedback() {
   int motorPins [7] = { motorPin1, motorPin2, motorPin3, motorPin4, motorPin5, motorPin6, motorPin7 };
@@ -75,14 +75,15 @@ void switchOnFeedback() {
     analogWrite(motorPins[i], 255);
     delay(200);
     analogWrite(motorPins[i], 0);
+    delay(200);
   }
 }
 
 
+
 void setup() {
   Serial.begin(115200);
-  compass.init();
-
+  compass.init(); 
 
   GPS.begin(9600);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
@@ -130,25 +131,24 @@ void loop() {
         Serial.print(GPS.latitudeDegrees);
         Serial.println(GPS.longitudeDegrees);
       }
-      if (GPS.fix && buttonState == 1) {
-        wayPoint.lat = GPS.latitudeDegrees;
-        wayPoint.lon = GPS.longitudeDegrees;
-        buttonOnFeedback();
+      wayPoint.lat = 51.449316;
+      wayPoint.lon = 5.487550;
+      if (buttonState == 1) {
+//        buttonOnFeedback();
       }
       Serial.print("button state");
       Serial.println(buttonState);
       int compassDirection;
 
       compass.read();
-
-      compassDirection = compass.getAzimuth();
+      
+      int compassDegree = atan2( compass.getY(), compass.getZ() ) * 180.0 / PI;
+      compassDirection = compassDegree < 0 ? 360 + compassDegree : compassDegree;
       Serial.print("compass degree");
       Serial.println(compassDirection);
 
-      if (GPS.fix) {
-        current.lat = GPS.latitudeDegrees;
-        current.lon = GPS.longitudeDegrees;
-      }
+      current.lat = 51.450043;
+      current.lon = 5.489877;
 
       unsigned long distanceToWayPoint =
         (unsigned long)TinyGPSPlus::distanceBetween(
@@ -156,6 +156,7 @@ void loop() {
           wayPoint.lon,
           current.lat,
           current.lon);
+      Serial.println("distance to way point");
       Serial.println(distanceToWayPoint);
 
       float trueBearing = getBearing(current, wayPoint);
@@ -173,30 +174,28 @@ void loop() {
       Serial.print("relativeBearing");
       Serial.println(relativeBearing);
 
-      float intensity = (255 * distanceToWayPoint) / 1000;
-
       if (relativeBearing < 22.5 || relativeBearing > 337.5) {
       }
       else if (relativeBearing < 67.5) {
-        setMotorPin(motorPin1, intensity);
+        setMotorPin(motorPin1, distanceToWayPoint);
       }
       else if (relativeBearing < 112.5) {
-        setMotorPin(motorPin2, intensity);
+        setMotorPin(motorPin2, distanceToWayPoint);
       }
       else if (relativeBearing < 157.5) {
-        setMotorPin(motorPin3, intensity);
+        setMotorPin(motorPin3, distanceToWayPoint);
       }
       else if (relativeBearing < 202.5) {
-        setMotorPin(motorPin4, intensity);
+        setMotorPin(motorPin4, distanceToWayPoint);
       }
       else if (relativeBearing < 247.5) {
-        setMotorPin(motorPin5, intensity);
+        setMotorPin(motorPin5, distanceToWayPoint);
       }
       else if (relativeBearing < 292.5) {
-        setMotorPin(motorPin6, intensity);
+        setMotorPin(motorPin6, distanceToWayPoint);
       }
       else if (relativeBearing < 337.5) {
-        setMotorPin(motorPin7, intensity);
+        setMotorPin(motorPin7, distanceToWayPoint);
       }
     }
   }
