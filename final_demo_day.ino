@@ -51,10 +51,17 @@ void setMotorPin(int motorPin, float distanceToWayPoint) {
   if (previousMotorPin != 34) {
     analogWrite(previousMotorPin, 0);
   }
-  analogWrite(motorPin, 255);
-  delay(200);
-  analogWrite(motorPin, 0);
-  delay(distanceToWayPoint);
+  if (distanceToWayPoint < 3000) {
+    analogWrite(motorPin, 255);
+    delay(200);
+    analogWrite(motorPin, 0);
+    delay(distanceToWayPoint);
+  } else {
+    analogWrite(motorPin, 255);
+    delay(200);
+    analogWrite(motorPin, 0);
+    delay(3000);
+  }
   previousMotorPin = motorPin;
 }
 
@@ -80,16 +87,16 @@ void switchOnFeedback() {
 }
 
 
-
 void setup() {
   Serial.begin(115200);
-  compass.init(); 
-//
-//  GPS.begin(9600);
-//  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-//  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY);
-//  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
-//  GPS.sendCommand(PGCMD_ANTENNA);
+  compass.init();
+
+
+  GPS.begin(9600);
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY);
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
+  GPS.sendCommand(PGCMD_ANTENNA);
 
   pinMode(motorPin1, OUTPUT);
   pinMode(motorPin2, OUTPUT);
@@ -113,28 +120,27 @@ void loop() {
     previousSwitchState = switchState;
   }
   if (switchState == 1) {
-//    char c = GPS.read();
-//    if (GPSECHO)
-//      if (c) Serial.print(c);
-//    if (GPS.newNMEAreceived()) {
-//      Serial.println(GPS.lastNMEA());
-//      if (!GPS.parse(GPS.lastNMEA()))
-//        return;
-//    }
+    char c = GPS.read();
+    if (GPSECHO)
+      if (c) Serial.print(c);
+    if (GPS.newNMEAreceived()) {
+      Serial.println(GPS.lastNMEA());
+      if (!GPS.parse(GPS.lastNMEA()))
+        return;
+    }
 
-    if (millis() - timer > 2000) {
+    if (millis() - timer > 300) {
       timer = millis();
       buttonState = digitalRead(buttonPin);
 
-//      if (GPS.fix) {
-//        Serial.print("Location: ");
-//        Serial.print(GPS.latitudeDegrees);
-//        Serial.println(GPS.longitudeDegrees);
-//      }
-      wayPoint.lat = 51.449317743199195;
-      wayPoint.lon = 5.487614638462321;
-
+      if (GPS.fix) {
+        Serial.print("Location: ");
+        Serial.print(GPS.latitudeDegrees);
+        Serial.println(GPS.longitudeDegrees);
+      }
       if (buttonState == 1) {
+        wayPoint.lat = 51.44807444217817;
+        wayPoint.lon = 5.48581551505266;
         buttonOnFeedback();
       }
       Serial.print("button state");
@@ -142,14 +148,16 @@ void loop() {
       int compassDirection;
 
       compass.read();
-      
+
       int compassDegree = atan2( compass.getY(), compass.getZ() ) * 180.0 / PI;
       compassDirection = compassDegree < 0 ? 360 + compassDegree : compassDegree;
       Serial.print("compass degree");
       Serial.println(compassDirection);
 
-      current.lat = 51.44755213228156;
-      current.lon = 5.486264183735993;
+      if (GPS.fix) {
+        current.lat = GPS.latitudeDegrees;
+        current.lon = GPS.longitudeDegrees;
+      }
 
       unsigned long distanceToWayPoint =
         (unsigned long)TinyGPSPlus::distanceBetween(
@@ -157,7 +165,6 @@ void loop() {
           wayPoint.lon,
           current.lat,
           current.lon);
-      Serial.println("distance to way point");
       Serial.println(distanceToWayPoint);
 
       float trueBearing = getBearing(current, wayPoint);
