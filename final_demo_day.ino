@@ -54,7 +54,7 @@ void setMotorPin(int motorPin, float distanceToWayPoint) {
   analogWrite(motorPin, 255);
   delay(200);
   analogWrite(motorPin, 0);
-  delay(distanceToWayPoint*10);
+  delay(distanceToWayPoint);
   previousMotorPin = motorPin;
 }
 
