@@ -1,24 +1,26 @@
 #include <QMC5883LCompass.h>
 #include <TinyGPS++.h>
-#include <analogWrite.h>
-#include <Adafruit_GPS.h>
-#define GPSSerial Serial1
-Adafruit_GPS GPS(&GPSSerial);
+#include <SoftwareSerial.h>
 
-#define GPSECHO false
+static const int RXPin = 4, TXPin = 3; // Rx -> 3 and Tx -> 4 on the board
+static const uint32_t GPSBaud = 9600;
+
+TinyGPSPlus gps;
+
+SoftwareSerial ss(RXPin, TXPin);
 
 uint32_t timer = millis();
 
 QMC5883LCompass compass;
-const int motorPin1 = 13;
-const int motorPin2 = 12;
-const int motorPin3 = 27;
-const int motorPin4 = 33;
-const int motorPin5 = 15;
-const int motorPin6 = 32;
-const int motorPin7 = 14;
-const int buttonPin = 26;
-const int switchPin = 25;
+const int motorPin1 = 12;
+const int motorPin2 = 11;
+const int motorPin3 = 10;
+const int motorPin4 = 9;
+const int motorPin5 = 8;
+const int motorPin6 = 7;
+const int motorPin7 = 6;
+const int buttonPin = 5;
+const int switchPin = 2;
 
 int previousMotorPin = 34;
 int previousSwitchState = 0;
@@ -90,13 +92,7 @@ void switchOnFeedback() {
 void setup() {
   Serial.begin(115200);
   compass.init();
-
-
-  GPS.begin(9600);
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY);
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
-  GPS.sendCommand(PGCMD_ANTENNA);
+  ss.begin(GPSBaud);
 
   pinMode(motorPin1, OUTPUT);
   pinMode(motorPin2, OUTPUT);
@@ -120,44 +116,35 @@ void loop() {
     previousSwitchState = switchState;
   }
   if (switchState == 1) {
-    char c = GPS.read();
-    if (GPSECHO)
-      if (c) Serial.print(c);
-    if (GPS.newNMEAreceived()) {
-      Serial.println(GPS.lastNMEA());
-      if (!GPS.parse(GPS.lastNMEA()))
-        return;
-    }
-
     if (millis() - timer > 300) {
       timer = millis();
-      buttonState = digitalRead(buttonPin);
 
-      if (GPS.fix) {
-        Serial.print("Location: ");
-        Serial.print(GPS.latitudeDegrees);
-        Serial.println(GPS.longitudeDegrees);
+      if (ss.available() > 0 && gps.encode(ss.read())) {
+        Serial.print(F("Location: "));
+        if (gps.location.isValid()) {
+          Serial.print(gps.location.lat(), 6);
+          Serial.print(F(","));
+          Serial.print(gps.location.lng(), 6);
+          current.lat = gps.location.lat();
+           current.lon = gps.location.lng();
+        }
       }
+      
+      buttonState = digitalRead(buttonPin);
       if (buttonState == 1) {
-        wayPoint.lat = 51.44807444217817;
-        wayPoint.lon = 5.48581551505266;
+        wayPoint.lat = 51.447179626160505;
+        wayPoint.lon = 5.485538783545764;
         buttonOnFeedback();
       }
       Serial.print("button state");
       Serial.println(buttonState);
+
       int compassDirection;
-
       compass.read();
-
       int compassDegree = atan2( compass.getY(), compass.getZ() ) * 180.0 / PI;
       compassDirection = compassDegree < 0 ? 360 + compassDegree : compassDegree;
       Serial.print("compass degree");
       Serial.println(compassDirection);
-
-      if (GPS.fix) {
-        current.lat = GPS.latitudeDegrees;
-        current.lon = GPS.longitudeDegrees;
-      }
 
       unsigned long distanceToWayPoint =
         (unsigned long)TinyGPSPlus::distanceBetween(
