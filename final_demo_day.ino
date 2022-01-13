@@ -2,7 +2,7 @@
 #include <TinyGPS++.h>
 #include <SoftwareSerial.h>
 
-static const int RXPin = 4, TXPin = 3; // Rx -> 3 and Tx -> 4 on the board
+static const int RXPin = 3, TXPin = 4;
 static const uint32_t GPSBaud = 9600;
 
 TinyGPSPlus gps;
@@ -106,6 +106,7 @@ void setup() {
 
 }
 
+
 void loop() {
 
   switchState = digitalRead(switchPin);
@@ -116,26 +117,22 @@ void loop() {
     previousSwitchState = switchState;
   }
   if (switchState == 1) {
-    if (millis() - timer > 300) {
-      timer = millis();
-
-      if (ss.available() > 0 && gps.encode(ss.read())) {
+    while (ss.available() > 0)
+      if (gps.encode(ss.read())) {
         Serial.print(F("Location: "));
         if (gps.location.isValid()) {
           Serial.print(gps.location.lat(), 6);
           Serial.print(F(","));
           Serial.print(gps.location.lng(), 6);
           current.lat = gps.location.lat();
-           current.lon = gps.location.lng();
+          current.lon = gps.location.lng();
         }
       }
-      
+    if (millis() - timer > 300) {
+      timer = millis();
       buttonState = digitalRead(buttonPin);
-      if (buttonState == 1) {
-        wayPoint.lat = 51.447179626160505;
-        wayPoint.lon = 5.485538783545764;
-        buttonOnFeedback();
-      }
+      wayPoint.lat = 51.447918488941546;
+      wayPoint.lon = 5.490951480719493;
       Serial.print("button state");
       Serial.println(buttonState);
 
