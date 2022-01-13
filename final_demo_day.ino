@@ -119,11 +119,7 @@ void loop() {
   if (switchState == 1) {
     while (ss.available() > 0)
       if (gps.encode(ss.read())) {
-        Serial.print(F("Location: "));
         if (gps.location.isValid()) {
-          Serial.print(gps.location.lat(), 6);
-          Serial.print(F(","));
-          Serial.print(gps.location.lng(), 6);
           current.lat = gps.location.lat();
           current.lon = gps.location.lng();
         }
@@ -131,25 +127,22 @@ void loop() {
     if (millis() - timer > 300) {
       timer = millis();
       buttonState = digitalRead(buttonPin);
-      wayPoint.lat = 51.447918488941546;
-      wayPoint.lon = 5.490951480719493;
-      Serial.print("button state");
-      Serial.println(buttonState);
+      if (buttonState == 1) {
+        wayPoint.lat = gps.location.lat();
+        wayPoint.lon = gps.location.lng();
+        buttonOnFeedback();
+      }
 
       int compassDirection;
       compass.read();
       int compassDegree = atan2( compass.getY(), compass.getZ() ) * 180.0 / PI;
       compassDirection = compassDegree < 0 ? 360 + compassDegree : compassDegree;
-      Serial.print("compass degree");
-      Serial.println(compassDirection);
-
       unsigned long distanceToWayPoint =
         (unsigned long)TinyGPSPlus::distanceBetween(
           wayPoint.lat,
           wayPoint.lon,
           current.lat,
           current.lon);
-      Serial.println(distanceToWayPoint);
 
       float trueBearing = getBearing(current, wayPoint);
       if (trueBearing < 0) {
@@ -162,9 +155,6 @@ void loop() {
       if (relativeBearing < 0) {
         relativeBearing = relativeBearing + 360;
       }
-
-      Serial.print("relativeBearing");
-      Serial.println(relativeBearing);
 
       if (relativeBearing < 22.5 || relativeBearing > 337.5) {
       }
