@@ -131,8 +131,8 @@ void loop() {
     if (millis() - timer > 300) {
       timer = millis();
       buttonState = digitalRead(buttonPin);
-      wayPoint.lat = 51.43343773758336;
-      wayPoint.lon = 5.471721701486573;
+      wayPoint.lat = 51.44873121208666;
+      wayPoint.lon = 5.459112850951249;
       Serial.print("button state");
       Serial.println(buttonState);
 
