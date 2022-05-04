@@ -169,22 +169,22 @@ void loop() {
       if (relativeBearing < 22.5 || relativeBearing > 337.5) {
       }
       else if (relativeBearing < 67.5) {
-        setMotorPin(motorPin1, distanceToWayPoint);
-      }
-      else if (relativeBearing < 112.5) {
-        setMotorPin(motorPin2, distanceToWayPoint);
-      }
-      else if (relativeBearing < 157.5) {
-        setMotorPin(motorPin3, distanceToWayPoint);
-      }
-      else if (relativeBearing < 202.5) {
         setMotorPin(motorPin4, distanceToWayPoint);
       }
-      else if (relativeBearing < 247.5) {
+      else if (relativeBearing < 112.5) {
+        setMotorPin(motorPin1, distanceToWayPoint);
+      }
+      else if (relativeBearing < 157.5) {
         setMotorPin(motorPin5, distanceToWayPoint);
       }
-      else if (relativeBearing < 292.5) {
+      else if (relativeBearing < 202.5) {
+        setMotorPin(motorPin2, distanceToWayPoint);
+      }
+      else if (relativeBearing < 247.5) {
         setMotorPin(motorPin6, distanceToWayPoint);
+      }
+      else if (relativeBearing < 292.5) {
+        setMotorPin(motorPin3, distanceToWayPoint);
       }
       else if (relativeBearing < 337.5) {
         setMotorPin(motorPin7, distanceToWayPoint);
